@@ -418,18 +418,18 @@ Extremos estaduais no IDEB: Ceará (5,55), Goiás (5,45) e Paraná (5,43) lidera
 
 ## 7. Limitações Técnicas e Próximos Passos
 
-### Autoavaliação do Aluno
+### Autoavaliação
 
-Ao concluir este projeto de MVP em Engenharia de Dados, foi realizada uma autoavaliação crítica abrangendo os objetivos iniciais, os obstáculos superados e o plano de evolução técnica para o portfólio:
+Como já tenho algum tempo de atuação profissional consolidada em Engenharia de Dados e no momento estar com stack full Google, revisitar o Databricks neste MVP foi um exercício estimulante de atualização técnica. O resgate de conceitos específicos da plataforma e a exploração de suas novas capacidades, como o Unity Catalog, reforçaram minha versatilidade multicloud e a capacidade de entregar pipelines ponta a ponta com rigor de governança e engenharia.
 
 #### 1. Atingimento dos Objetivos Delineados
 * **Pipeline Ponta a Ponta Integrado:** O objetivo principal de conceber, estruturar e executar um pipeline de dados ponta a ponta na nuvem foi plenamente alcançado. O projeto unificou com sucesso 6 fontes heterogêneas de dados públicos federais (APIs REST em JSON do IBGE e SIDRA, arquivos tabulares compactados em CSV de alta volumetria do Censo Escolar e Bolsa Família, e planilhas estruturadas em XLSX do INEP).
 * **Arquitetura Medalhão e Governança:** Foi implementada com rigor a separação em camadas **Bronze** (ingestão raw preservando metadados de linhagem), **Silver** (limpeza, tipagem estrita e desduplicação) e **Gold** (modelagem dimensional estrela com tabela fato municipal e dimensões normalizadas), suportadas por catálogo unificado no **Unity Catalog** com documentação de metadados, comentários e tags de governança.
-* **Qualidade de Dados Auditável:** Implementou-se uma suíte de testes cobrindo as 5 dimensões do framework DAMA-DMBOK (Completude, Conformidade, Unicidade, Consistência e Acurácia), garantindo que a camada analítica só fosse liberada mediante validações quantitativas automatizadas.
+* **Qualidade de Dados Auditável:** Implementou-se uma suíte de testes cobrindo as 5 dimensões do framework, garantindo que a camada analítica só fosse liberada mediante validações quantitativas automatizadas.
 * **Respostas às Perguntas de Negócio:** A camada Gold permitiu responder de forma conclusiva às questões propostas, correlacionando indicadores de vulnerabilidade social (Bolsa Família), infraestrutura física escolar e desempenho educacional (IDEB) com granularidade regional e estadual.
 
 #### 2. Dificuldades Encontradas durante a Execução
-* **Restrições de Conectividade do Ambiente Gratuito (Databricks Free Edition):** A ausência de conectividade externa direta (bloqueio de egress) nos clusters da versão gratuita impediu a extração HTTP direta a partir dos notebooks em nuvem. Essa restrição exigiu a criação de um script desacoplado de extração e pré-processamento local em Python (`extrair_dados.py`) e uma rotina de carga em Volumes Delta, simulando uma landing zone corporativa.
+* **Restrições de Conectividade do Ambiente Gratuito (Databricks Free Edition):** A ausência de conectividade externa direta nos clusters da versão gratuita impediu a extração HTTP direta a partir dos notebooks em nuvem. Essa restrição exigiu a criação de um script desacoplado de extração e pré-processamento local em Python (`extrair_dados.py`) e uma rotina de carga em Volumes Delta, simulando uma landing zone corporativa.
 * **Volumetria Massiva e Gestão de Memória:** O microdado bruto do Bolsa Família possui milhões de registros e informações sensíveis (PII). Foi necessário adotar leitura em streaming por lotes (*chunksize*) com agregação municipal em tempo de execução, garantindo consumo controlado de memória e total conformidade com a LGPD antes da persistência em disco.
 * **Reconciliação e Padronização de Chaves Primárias:** A existência de padrões divergentes de codificação territorial entre as fontes — como o código municipal SIAFI utilizado pelo Portal da Transparência versus o código IBGE de 7 dígitos exigido pelos órgãos estatísticos — demandou rotinas de enriquecimento e mapeamento cruzado para evitar perda de cobertura na junção dos dados.
 * **Valores Omissos e Censura Estatística:** Lidar com os critérios de sigilo do INEP (escolas ou municípios com menos de 10 alunos têm o IDEB omitido por regra de preservação estatística) exigiu cuidado nas agregações para evitar distorções nas métricas de correlação e médias ponderadas.
@@ -443,7 +443,6 @@ Ao concluir este projeto de MVP em Engenharia de Dados, foi realizada uma autoav
 ### Débitos Técnicos e Limitações Conhecidas
 * **Bloqueio de Egress no Databricks Free Edition:** Necessidade de rodar o download e descompactação localmente antes de alimentar o Volume.
 * **Cobertura Temporal Restrita:** Ingestão de um mês de referência para o Bolsa Família e recorte da edição de 2023 do IDEB (série 2005-2023 arquivada sem cruzamento longitudinal).
-* **Ausência da Fonte de Repasses Escolares:** O PDDE (FNDE) não foi incluído, limitando a análise financeira escolar a proxies de infraestrutura física.
 * **Análise Observacional:** Correlações quantitativas não isolam causalidade sem regressões controladas e modelos de efeitos fixos municipais.
 
 ### Backlog Técnico
