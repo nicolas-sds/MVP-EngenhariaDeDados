@@ -1,0 +1,68 @@
+resources:
+  jobs:
+    mvp_pipeline:
+      name: mvp_pipeline_eng_dados
+      description: >-
+        Pipeline Medalhão (Bronze -> Silver -> Gold), auditoria de qualidade e análise.
+        MVP de Engenharia de Dados.
+      max_concurrent_runs: 1
+      queue:
+        enabled: true
+
+      git_source:
+        git_url: https://github.com/nicolas-sds/MVP-EngenhariaDeDados.git
+        git_provider: gitHub
+        git_branch: dev
+
+      parameters:
+        - name: catalog
+          default: workspace
+        - name: landing
+          default: /Volumes/workspace/raw/files
+
+      tasks:
+        - task_key: setup_pipeline
+          description: Cria os schemas bronze/silver/gold e confere os Parquet na landing zone.
+          notebook_task:
+            notebook_path: notebooks/00_setup_pipeline
+            source: GIT
+
+        - task_key: ingestion
+          description: Lê os Parquet do Volume e persiste como Delta, com metadados de rastreabilidade.
+          depends_on:
+            - task_key: setup_pipeline
+          notebook_task:
+            notebook_path: notebooks/01_ingestion
+            source: GIT
+
+        - task_key: transformation
+          description: Limpeza, tipagem, recorte da rede pública e mudança de grão escola -> município.
+          depends_on:
+            - task_key: ingestion
+          notebook_task:
+            notebook_path: notebooks/02_transformation
+            source: GIT
+
+        - task_key: modeling
+          description: "Esquema estrela: 2 dimensões conformadas e 3 tabelas fato."
+          depends_on:
+            - task_key: transformation
+          notebook_task:
+            notebook_path: notebooks/03_modeling
+            source: GIT
+
+        - task_key: data_quality
+          description: Auditoria das 5 dimensões de qualidade.
+          depends_on:
+            - task_key: modeling
+          notebook_task:
+            notebook_path: notebooks/04_data_quality
+            source: GIT
+
+        - task_key: analysis
+          description: Responde às 4 perguntas de negócio.
+          depends_on:
+            - task_key: modeling
+          notebook_task:
+            notebook_path: notebooks/05_analysis
+            source: GIT
